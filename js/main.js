@@ -1,8 +1,12 @@
 var canvas, ctx, width, height, frames, currentState = 0;
 
-var maxJumps = 5;
+var maxJumps = 6;
 var setSpeed = 6;
-var difficult = 80;
+var difficult = 100;
+var record;
+var img = new Image();
+var imgFloor = new Image();
+var imgChar = new Image();
 
 // states 
 var state = {
@@ -17,8 +21,10 @@ var floor = {
     height: 50,
     cor: "#ffdf70",
     draw: function() {
-        ctx.fillStyle = this.cor;
-        ctx.fillRect(0, this.y, width, this.height);
+        // ctx.fillStyle = this.cor;
+        // ctx.fillRect(0, this.y, width, this.height);
+
+        floorBg.draw(0, this.y, width, this.height)
     }
 }
 
@@ -26,8 +32,8 @@ var floor = {
 var square = {
     x: 50,
     y: 0,
-    height: 50,
-    width: 50,
+    height: char.height,
+    width: char.width,
     cor: "#ff4e4e",
     speed: 0,
     gravity: 1.5,
@@ -58,19 +64,29 @@ var square = {
     reset() {
         square.speed = 0;
         square.y = 0;
+
+        if(this.score >  record) {
+            localStorage.setItem("record", this.score);
+            record = this.score;
+        }
+
         this.score = 0;
+        
     },
 
     // draw at canvas event
     draw: function() {
-        ctx.fillStyle = this.cor;
-        ctx.fillRect(this.x, this.y, this.height, this.width);
+        // ctx.fillStyle = this.cor;
+        // ctx.fillRect(this.x, this.y, this.height, this.width);
+
+        imgChar.src = '../img/char.png';
+        char.draw(this.x, this.y, this.height, this.width);
     }
 }
 
 var barrier = {
     _obs: [],
-    colors: ["#ffbc1c", "#ff1c1c", "#ff85e1", "#52a7ff", "#78ff5d"],
+    colors: ["#f44336", "#FF9800", "#6A1B9A", "#9C27B0", "#880E4F"],
     time: 0,
 
     setElement: function() {
@@ -79,7 +95,7 @@ var barrier = {
             // define random square barrier
             // width: 30 + Math.floor(20 * Math.random()),
             width: 40,
-            height: 30 + Math.floor(100 * Math.random()),
+            height: 20 + Math.floor(100 * Math.random()),
             cor: this.colors[Math.floor(5 * Math.random())]
         });
 
@@ -174,8 +190,21 @@ document.body.appendChild(canvas)
 document.addEventListener("mousedown", click);
 document.addEventListener("keypress", click);
 
- currentState = state.play;
-roll();
+currentState = state.play;
+record = localStorage.getItem("record");
+
+    if(record == null) {
+        record = 0;
+        roll();
+    }
+
+    img = new Image();
+    img.src = '../img/background.png';
+
+    imgFloor = new Image();
+    imgFloor.src= "../img/floor.png";
+
+    console.log(img.src)
 }
 
 // request the main functions
@@ -201,8 +230,9 @@ function refresh() {
 function draw() {
 
     // create a background
-    ctx.fillStyle = "#333"
-    ctx.fillRect(0, 0, width, height);
+    // ctx.fillStyle = "#333"
+    // ctx.fillRect(0, 0, width, height);
+    background.draw(0,0);
 
     ctx.fillStyle = "#fff";
     ctx.font = "50px Arial";
@@ -220,6 +250,15 @@ function draw() {
         ctx.translate(width / 2, height / 2);
         ctx.fillStyle = "#fff";
 
+        if(square.score > record) {
+            ctx.fillText("Novo Record!", -150, -65);
+        } else if (record < 10){
+            ctx.fillText("Record" + record, -99, -65);
+        } else if(record >= 10 && record < 100) {
+            ctx.fillText("Record" + record, -112, -65);
+        } else {
+            ctx.fillText("Record" + record, -125, -65);
+        }
         
         if(square.score < 10 ) {
             ctx.fillText(square.score, -13, 19);
